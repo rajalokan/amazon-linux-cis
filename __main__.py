@@ -6,6 +6,7 @@ import os
 import re
 from subprocess import CalledProcessError
 import pkg_resources
+import subprocess
 
 from util import exec_shell, set_backup_enabled, File, Package, Service, PropertyFile
 
@@ -598,6 +599,9 @@ def main():
     configure_password_parmas()
     configure_umask()
     configure_su()
+
+    # Call bash script to fix missing rules
+    subprocess.call("./missing_rules.sh")
 
 
 if __name__ == '__main__':
