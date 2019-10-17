@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
 
+sudo tee -a /etc/modprobe.d/CIS.conf > /dev/null << EOF
 # 1.1.1.1
-# 1.1.1.2
-# 1.1.1.3
-sudo tee -a /etc/modprobe.d/cramfs.conf > /dev/null << EOF
 install cramfs /bin/true
+# 1.1.1.2
 install hfs /bin/true
+# 1.1.1.3
 install hfsplus /bin/true
 install squashfs /bin/true
 install udf /bin/true
+# 3.4.1
+install dccp /bin/true
+# 3.4.2
+install sctp /bin/true
+# 3.4.3
+install rds /bin/true
+# 3.4.4
+install tipc /bin/true
 EOF
 #
 sudo rmmod cramfs
@@ -18,22 +26,15 @@ sudo rmmod squashfs
 sudo rmmod udf
 
 # 1.1.2 Ensure /tmp is configured
-# sudo vim /etc/systemd/system/local-fs.target.wants/tmp.mount
-# [Mount]
-# What=tmpfs
-# Where=/tmp
-# Type=tmpfs
-# Options=mode=1777,strictatime,noexec,nodev,nosuid
-### add `tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0` to /etc/fstab OR
-## TODO below line not working correctly, fix.
-# sudo sed -e '/Options=mode=1777,strictatime/a ,noexec,nodev,nosuid' /usr/lib/systemd/system/tmp.mount
-# sudo systemctl daemon-reload
-# sudo systemctl unmask tmp.mount
-# sudo systemctl enable --now tmp.mount
+sudo systemctl unmask tmp.mount
+sudo systemctl daemon-reload
+sudo systemctl enable --now tmp.mount
+#
+sudo sed -i 's/Options=.*/&,noexec,nodev,nosuid/' /usr/lib/systemd/system/tmp.mount
+#
+echo 'tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0' | sudo tee -a /etc/fstab
 
 ## 1.1.17 Ensure noexec option set on /dev/shm partition
-### `tmpfs /dev/shm tmpfs defaults,rw,nosuid,nodev,noexec 0 0` in /etc/fstab
-
 echo 'tmpfs /dev/shm tmpfs defaults,rw,nosuid,nodev,noexec 0 0' | sudo tee -a /etc/fstab
 
 # 1.3.1
@@ -61,6 +62,10 @@ sudo sed -i 's/SELINUX=.*/SELINUX=enforcing/g' /etc/selinux/config
 
 # 1.6.1.3 Ensure SELinux policy is configured
 sudo sed -i 's/SELINUXTYPE=.*/SELINUXTYPE=targeted/g' /etc/selinux/config
+
+# 1.6.1.6 Ensure no unconfined daemons exist
+# ps -eZ | egrep "initrc" | egrep -vw "tr|ps|egrep|bash|awk" | tr ':' ' ' | awk '{ print $NF }'
+
 
 # 1.7.1.2
 echo "Authorized uses only. All activity may be monitored and reported." | sudo tee /etc/issue
@@ -180,16 +185,6 @@ sudo sysctl -w net.ipv6.route.flush=1
 # 3.3.3 Ensure /etc/hosts.deny is configured
 # echo "ALL: ALL" | sudo tee -a /etc/hosts.deny # informational, skip
 
-# 3.4.1
-# 3.4.2
-# 3.4.3
-# 3.4.4
-sudo tee -a /etc/modprobe.d/CIS.conf > /dev/null << EOF
-install dccp /bin/true
-install sctp /bin/true
-install rds /bin/true
-install tipc /bin/true
-EOF
 
 # # 3.5.1.1
 # iptables -P INPUT DROP
@@ -387,6 +382,16 @@ sudo sed -i 's/#.*LoginGraceTime.*/LoginGraceTime 60/g' /etc/ssh/sshd_config
 # 5.2.19
 sudo sed -i 's/#.*Banner.*/Banner \/etc\/issue.net/g' /etc/ssh/sshd_config
 
+# 5.4.2 Ensure system accounts are non-login
+for user in `awk -F: '($3 < 1000) {print $1 }' /etc/passwd`; do
+    if [[ $user != "root" ]]; then
+        usermod -L $user
+        if [ $user != "sync" ] && [ $user != "shutdown" ] && [ $user != "halt" ]; then
+            usermod -s /usr/sbin/nologin $user
+        fi
+    fi
+done
+
 
 # 5.4.4
 # 5.4.5
@@ -408,10 +413,39 @@ sudo tee -a /etc/profile.d/*.sh >/dev/null <<EOF
 umask 027
 EOF
 
-# 6.2.7
-
-# 6.2.9
-
-# 6.2.8
+# # 6.2.7
+# cat /etc/passwd | awk -F: '{ print $1 " " $3 " " $6 }' | while read user uid dir; do
+#   if [ $uid -ge 1000 -a ! -d "$dir" -a $user != "nfsnobody" ]; then
+#     echo "The home directory ($dir) of user $user does not exist."
+#   fi
+# done
+#
+# # 6.2.8
+# for dir in `cat /etc/passwd | egrep -v '(root|halt|sync|shutdown)' | awk -F: '($7 != "/usr/sbin/nologin") { print $6 }'`; do
+#   dirperm=`ls -ld $dir | cut -f1 -d" "`
+#   if [ `echo $dirperm | cut -c6 ` != "-" ]; then
+#     echo "Group Write permission set on directory $dir"
+#   fi
+#   if [ `echo $dirperm | cut -c8 ` != "-" ]; then
+#     echo "Other Read permission set on directory $dir"
+#   fi
+#   if [ `echo $dirperm | cut -c9 ` != "-" ]; then
+#     echo "Other Write permission set on directory $dir"
+#   fi
+#   if [ `echo $dirperm | cut -c10 ` != "-" ]; then
+#     echo "Other Execute permission set on directory $dir"
+#   fi
+# done
+#
+# # 6.2.9
+# cat /etc/passwd | awk -F: '{ print $1 " " $3 " " $6 }' | while read user uid dir; do
+#   # if [ $uid -ge 1000 -a -d "$dir" -a $user != "nfsnobody" ]; then
+#   if [ $uid -ge 1000 ]; then
+#       owner=$(stat -L -c "%U" "$dir")
+#       if [ "$owner" != "$user" ]; then
+#           echo "The home directory ($dir) of user $user is owned by $owner."
+#       fi
+#   fi
+# done
 
 echo "CIS hardening successful"
