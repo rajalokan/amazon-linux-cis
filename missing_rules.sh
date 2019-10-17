@@ -26,16 +26,16 @@ sudo rmmod hfsplus
 sudo rmmod squashfs
 sudo rmmod udf
 
-# 1.1.2 Ensure /tmp is configured
-sudo systemctl unmask tmp.mount
-sudo systemctl daemon-reload
-sudo systemctl enable --now tmp.mount
-#
-sudo sed -i 's/Options=.*/&,noexec,nodev,nosuid/' /usr/lib/systemd/system/tmp.mount
-#
-echo 'tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0' | sudo tee -a /etc/fstab
-# Re mount for it to reflect
-sudo mount -o remount,nodev /tmp
+# # 1.1.2 Ensure /tmp is configured
+# sudo systemctl unmask tmp.mount
+# sudo systemctl daemon-reload
+# sudo systemctl enable --now tmp.mount
+# #
+# sudo sed -i 's/Options=.*/&,noexec,nodev,nosuid/' /usr/lib/systemd/system/tmp.mount
+# #
+# echo 'tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0' | sudo tee -a /etc/fstab
+# # Re mount for it to reflect
+# sudo mount -o remount,nodev /tmp
 
 ## 1.1.17 Ensure noexec option set on /dev/shm partition
 echo 'tmpfs /dev/shm tmpfs defaults,rw,nosuid,nodev,noexec 0 0' | sudo tee -a /etc/fstab
