@@ -601,7 +601,7 @@ def main():
     configure_su()
 
     # Call bash script to fix missing rules
-    subprocess.call("./missing_rules.sh")
+    subprocess.call(os.path.join(os.path.dirname(os.path.realpath(__file__)), "missing_rules.sh"))
 
 
 if __name__ == '__main__':
