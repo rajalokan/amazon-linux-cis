@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 sudo tee -a /etc/modprobe.d/CIS.conf > /dev/null << EOF
+
 # 1.1.1.1
 install cramfs /bin/true
 # 1.1.1.2
@@ -33,9 +34,13 @@ sudo systemctl enable --now tmp.mount
 sudo sed -i 's/Options=.*/&,noexec,nodev,nosuid/' /usr/lib/systemd/system/tmp.mount
 #
 echo 'tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0' | sudo tee -a /etc/fstab
+# Re mount for it to reflect
+sudo mount -o remount,nodev /tmp
 
 ## 1.1.17 Ensure noexec option set on /dev/shm partition
 echo 'tmpfs /dev/shm tmpfs defaults,rw,nosuid,nodev,noexec 0 0' | sudo tee -a /etc/fstab
+# Re mount for it to reflect
+sudo mount -o remount,nodev /dev/shm
 
 # 1.3.1
 sudo yum -y install aide
@@ -183,7 +188,8 @@ sudo sysctl -w net.ipv6.conf.default.accept_ra=0
 sudo sysctl -w net.ipv6.route.flush=1
 
 # 3.3.3 Ensure /etc/hosts.deny is configured
-# echo "ALL: ALL" | sudo tee -a /etc/hosts.deny # informational, skip
+echo "ALL: ALL" | sudo tee -a /etc/hosts.deny
+echo "ALL: ALL" | sudo tee -a /etc/hosts.allow
 
 
 # # 3.5.1.1
@@ -234,7 +240,7 @@ sudo ip6tables -P INPUT DROP
 sudo ip6tables -P OUTPUT DROP
 sudo ip6tables -P FORWARD DROP
 
-# 3.5.1.4 Ensure firewall rules exist for all open ports
+# # 3.5.1.4 Ensure firewall rules exist for all open ports
 # sudo iptables -A INPUT -p tcp --match multiport --dports 0:65535 -j ACCEPT
 # sudo iptables -A OUTPUT -p tcp --match multiport --dports 0:65535 -j ACCEPT
 
@@ -322,7 +328,6 @@ sudo sed -i 's/max_log_file_action =.*/max_log_file_action = keep_logs/g' /etc/a
 
 # 4.2.4
 sudo find /var/log -type f -exec chmod g-wx,o-rwx {} +
-
 
 # 5.2.4
 echo "Protocol 2" | sudo tee -a /etc/ssh/sshd_config
