@@ -424,7 +424,7 @@ EOF
 #     echo "The home directory ($dir) of user $user does not exist."
 #   fi
 # done
-#
+
 # # 6.2.8
 # for dir in `cat /etc/passwd | egrep -v '(root|halt|sync|shutdown)' | awk -F: '($7 != "/usr/sbin/nologin") { print $6 }'`; do
 #   dirperm=`ls -ld $dir | cut -f1 -d" "`
@@ -441,16 +441,18 @@ EOF
 #     echo "Other Execute permission set on directory $dir"
 #   fi
 # done
-#
+
 # # 6.2.9
-# cat /etc/passwd | awk -F: '{ print $1 " " $3 " " $6 }' | while read user uid dir; do
-#   # if [ $uid -ge 1000 -a -d "$dir" -a $user != "nfsnobody" ]; then
-#   if [ $uid -ge 1000 ]; then
-#       owner=$(stat -L -c "%U" "$dir")
-#       if [ "$owner" != "$user" ]; then
-#           echo "The home directory ($dir) of user $user is owned by $owner."
-#       fi
-#   fi
-# done
+cat /etc/passwd | awk -F: '{ print $1 " " $3 " " $6 }' | while read user uid dir; do
+  # if [ $uid -ge 1000 -a -d "$dir" -a $user != "nfsnobody" ]; then
+  if [ $uid -ge 1000 ]; then
+      owner=$(stat -L -c "%U" "$dir")
+      if [ "$owner" != "$user" ]; then
+        echo "The home directory ($dir) of user $user is owned by $owner."
+        sudo chown ${user}:${user} ${dir}
+      fi
+  fi
+done
+# sudo chown nfsnobody:nfsnobody /var/lib/nfs
 
 echo "CIS hardening successful"
