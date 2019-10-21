@@ -82,111 +82,111 @@ echo "Authorized uses only. All activity may be monitored and reported." | sudo 
 # 2.1.2
 sudo yum remove -y xorg-x11*
 
-sudo tee -a /etc/sysctl.d/99-CIS.conf > /dev/null <<EOF
-# 1.5.1
-fs.suid_dumpable = 0
-
-# 1.5.2
-kernel.randomize_va_space = 2
-
-# 3.1.1 Ensure IP forwarding is disabled
-net.ipv4.ip_forward = 0
-net.ipv6.conf.all.forwarding = 0
-
-# 3.1.2 Ensure packet redirect sending is disabled
-net.ipv4.conf.all.send_redirects = 0
-net.ipv4.conf.default.send_redirects = 0
-
-# 3.2.1 Ensure source routed packets are not accepted
-net.ipv4.conf.all.accept_source_route = 0
-net.ipv4.conf.default.accept_source_route = 0
-net.ipv6.conf.all.accept_source_route = 0
-net.ipv6.conf.default.accept_source_route = 0
-
-# 3.2.2 ICMP Redirects not accepted
-net.ipv4.conf.all.accept_redirects = 0
-net.ipv4.conf.default.accept_redirects = 0
-net.ipv6.conf.all.accept_redirects = 0
-net.ipv6.conf.default.accept_redirects = 0
-
-# 3.2.3 Secure ICMP redirects not accepted
-net.ipv4.conf.all.secure_redirects = 0
-net.ipv4.conf.default.secure_redirects = 0
-
-# 3.2.4 Ensure suspicious packets are logged
-net.ipv4.conf.all.log_martians = 1
-net.ipv4.conf.default.log_martians = 1
-
-# 3.2.5
-net.ipv4 .icmp_echo_ignore_broadcasts = 1
-
-# 3.2.6
-net.ipv4.icmp_ignore_bogus_error_responses = 1
-
-# 3.2.7
-net.ipv4.conf.all.rp_filter = 1
-net.ipv4.conf.default.rp_filter = 1
-
-# 3.2.8
-net.ipv4.tcp_syncookies = 1
-
-# 3.2.9 Ensure IPv6 router advertisements are not accepted
-net.ipv6.conf.all.accept_ra = 0
-net.ipv6.conf.default.accept_ra = 0
-EOF
-
-# 1.5.2
-sudo sysctl -w kernel.randomize_va_space=2
-
-# 3.1.2
-sudo sysctl -w net.ipv4.ip_forward=0
-sudo sysctl -w net.ipv6.conf.all.forwarding=0
-sudo sysctl -w net.ipv4.route.flush=1
-sudo sysctl -w net.ipv6.route.flush=1
-# 3.1.2
-sudo sysctl -w net.ipv4.conf.all.send_redirects=0
-sudo sysctl -w net.ipv4.conf.default.send_redirects=0
-sudo sysctl -w net.ipv4.route.flush=1
-# 3.2.1
-sudo sysctl -w net.ipv4.conf.all.accept_source_route=0
-sudo sysctl -w net.ipv4.conf.default.accept_source_route=0
-sudo sysctl -w net.ipv6.conf.all.accept_source_route=0
-sudo sysctl -w net.ipv6.conf.default.accept_source_route=0
-sudo sysctl -w net.ipv4.route.flush=1
-sudo sysctl -w net.ipv6.route.flush=1
-# 3.2.2
-sudo sysctl -w net.ipv4.conf.all.accept_redirects=0
-sudo sysctl -w net.ipv4.conf.default.accept_redirects=0
-sudo sysctl -w net.ipv6.conf.all.accept_redirects=0
-sudo sysctl -w net.ipv6.conf.default.accept_redirects=0
-sudo sysctl -w net.ipv4.route.flush=1
-sudo sysctl -w net.ipv6.route.flush=1
-
-# 3.2.3
-sudo sysctl -w net.ipv4.conf.all.secure_redirects=0
-sudo sysctl -w net.ipv4.conf.default.secure_redirects=0
-sudo sysctl -w net.ipv4.route.flush=1
-
-# 3.2.4
-sudo sysctl -w net.ipv4.conf.all.log_martians=1
-sudo sysctl -w net.ipv4.conf.default.log_martians=1
-sudo sysctl -w net.ipv4.route.flush=1
-# 3.2.5
-sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
-sudo sysctl -w net.ipv4.route.flush=1
-# 3.2.6
-sudo sysctl -w net.ipv4.route.flush=1
-# 3.2.7
-sudo sysctl -w net.ipv4.conf.all.rp_filter=1
-sudo sysctl -w net.ipv4.conf.default.rp_filter=1
-sudo sysctl -w net.ipv4.route.flush=1
-# 3.2.8
-sudo sysctl -w net.ipv4.tcp_syncookies=1
-sudo sysctl -w net.ipv4.route.flush=1
-# 3.2.9
-sudo sysctl -w net.ipv6.conf.all.accept_ra=0
-sudo sysctl -w net.ipv6.conf.default.accept_ra=0
-sudo sysctl -w net.ipv6.route.flush=1
+# sudo tee -a /etc/sysctl.d/99-CIS.conf > /dev/null <<EOF
+# # 1.5.1
+# fs.suid_dumpable = 0
+#
+# # 1.5.2
+# kernel.randomize_va_space = 2
+#
+# # 3.1.1 Ensure IP forwarding is disabled
+# net.ipv4.ip_forward = 0
+# net.ipv6.conf.all.forwarding = 0
+#
+# # 3.1.2 Ensure packet redirect sending is disabled
+# net.ipv4.conf.all.send_redirects = 0
+# net.ipv4.conf.default.send_redirects = 0
+#
+# # 3.2.1 Ensure source routed packets are not accepted
+# net.ipv4.conf.all.accept_source_route = 0
+# net.ipv4.conf.default.accept_source_route = 0
+# net.ipv6.conf.all.accept_source_route = 0
+# net.ipv6.conf.default.accept_source_route = 0
+#
+# # 3.2.2 ICMP Redirects not accepted
+# net.ipv4.conf.all.accept_redirects = 0
+# net.ipv4.conf.default.accept_redirects = 0
+# net.ipv6.conf.all.accept_redirects = 0
+# net.ipv6.conf.default.accept_redirects = 0
+#
+# # 3.2.3 Secure ICMP redirects not accepted
+# net.ipv4.conf.all.secure_redirects = 0
+# net.ipv4.conf.default.secure_redirects = 0
+#
+# # 3.2.4 Ensure suspicious packets are logged
+# net.ipv4.conf.all.log_martians = 1
+# net.ipv4.conf.default.log_martians = 1
+#
+# # 3.2.5
+# net.ipv4 .icmp_echo_ignore_broadcasts = 1
+#
+# # 3.2.6
+# net.ipv4.icmp_ignore_bogus_error_responses = 1
+#
+# # 3.2.7
+# net.ipv4.conf.all.rp_filter = 1
+# net.ipv4.conf.default.rp_filter = 1
+#
+# # 3.2.8
+# net.ipv4.tcp_syncookies = 1
+#
+# # 3.2.9 Ensure IPv6 router advertisements are not accepted
+# net.ipv6.conf.all.accept_ra = 0
+# net.ipv6.conf.default.accept_ra = 0
+# EOF
+#
+# # 1.5.2
+# sudo sysctl -w kernel.randomize_va_space=2
+#
+# # 3.1.2
+# sudo sysctl -w net.ipv4.ip_forward=0
+# sudo sysctl -w net.ipv6.conf.all.forwarding=0
+# sudo sysctl -w net.ipv4.route.flush=1
+# sudo sysctl -w net.ipv6.route.flush=1
+# # 3.1.2
+# sudo sysctl -w net.ipv4.conf.all.send_redirects=0
+# sudo sysctl -w net.ipv4.conf.default.send_redirects=0
+# sudo sysctl -w net.ipv4.route.flush=1
+# # 3.2.1
+# sudo sysctl -w net.ipv4.conf.all.accept_source_route=0
+# sudo sysctl -w net.ipv4.conf.default.accept_source_route=0
+# sudo sysctl -w net.ipv6.conf.all.accept_source_route=0
+# sudo sysctl -w net.ipv6.conf.default.accept_source_route=0
+# sudo sysctl -w net.ipv4.route.flush=1
+# sudo sysctl -w net.ipv6.route.flush=1
+# # 3.2.2
+# sudo sysctl -w net.ipv4.conf.all.accept_redirects=0
+# sudo sysctl -w net.ipv4.conf.default.accept_redirects=0
+# sudo sysctl -w net.ipv6.conf.all.accept_redirects=0
+# sudo sysctl -w net.ipv6.conf.default.accept_redirects=0
+# sudo sysctl -w net.ipv4.route.flush=1
+# sudo sysctl -w net.ipv6.route.flush=1
+#
+# # 3.2.3
+# sudo sysctl -w net.ipv4.conf.all.secure_redirects=0
+# sudo sysctl -w net.ipv4.conf.default.secure_redirects=0
+# sudo sysctl -w net.ipv4.route.flush=1
+#
+# # 3.2.4
+# sudo sysctl -w net.ipv4.conf.all.log_martians=1
+# sudo sysctl -w net.ipv4.conf.default.log_martians=1
+# sudo sysctl -w net.ipv4.route.flush=1
+# # 3.2.5
+# sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
+# sudo sysctl -w net.ipv4.route.flush=1
+# # 3.2.6
+# sudo sysctl -w net.ipv4.route.flush=1
+# # 3.2.7
+# sudo sysctl -w net.ipv4.conf.all.rp_filter=1
+# sudo sysctl -w net.ipv4.conf.default.rp_filter=1
+# sudo sysctl -w net.ipv4.route.flush=1
+# # 3.2.8
+# sudo sysctl -w net.ipv4.tcp_syncookies=1
+# sudo sysctl -w net.ipv4.route.flush=1
+# # 3.2.9
+# sudo sysctl -w net.ipv6.conf.all.accept_ra=0
+# sudo sysctl -w net.ipv6.conf.default.accept_ra=0
+# sudo sysctl -w net.ipv6.route.flush=1
 
 # 3.3.3 Ensure /etc/hosts.deny is configured
 echo "ALL: ALL" | sudo tee -a /etc/hosts.deny
