@@ -533,6 +533,8 @@ def main():
                         help='disable iptables')
     parser.add_argument('--disable-mount-options', action='store_true',
                         help='disable set mount options')
+    parser.add_argument('--skip', action='store_true',
+                        help='Skip some parts')
 
     args = parser.parse_args()
 
@@ -601,7 +603,16 @@ def main():
     configure_su()
 
     # Call bash script to fix missing rules
-    subprocess.call(os.path.join(os.path.dirname(os.path.realpath(__file__)), "missing_rules.sh"))
+    file_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "missing_rules.sh"
+    )
+    if args.skip:
+        cmd = [file_path, "skip"]
+    else:
+        cmd = [file_path]
+
+    subprocess.call(cmd)
 
 
 if __name__ == '__main__':
