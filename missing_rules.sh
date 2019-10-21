@@ -26,19 +26,20 @@ sudo rmmod hfsplus
 sudo rmmod squashfs
 sudo rmmod udf
 
-# # 1.1.2 Ensure /tmp is configured
-# sudo systemctl unmask tmp.mount
-# sudo systemctl daemon-reload
-# sudo systemctl enable --now tmp.mount
-# #
-# sudo sed -i 's/Options=.*/&,noexec,nodev,nosuid/' /usr/lib/systemd/system/tmp.mount
-# #
-# echo 'tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0' | sudo tee -a /etc/fstab
-# # Re mount for it to reflect
-# sudo mount -o remount,nodev /tmp
+# 1.1.2 Ensure /tmp is configured
+sudo systemctl unmask tmp.mount
+sudo systemctl daemon-reload
+sudo systemctl enable --now tmp.mount
+#
+sudo sed -i 's/Options=.*/&,noexec,nodev,nosuid/' /usr/lib/systemd/system/tmp.mount
+#
+# Re mount for it to reflect
+sudo mount -o remount,nodev /tmp
 
 ## 1.1.17 Ensure noexec option set on /dev/shm partition
-echo 'tmpfs /dev/shm tmpfs defaults,rw,nosuid,nodev,noexec 0 0' | sudo tee -a /etc/fstab
+grep -Pq '/dev/shm' /etc/fstab \
+    && sudo sed -i 's:^tmpfs.*/dev/shm.*:tmpfs\t    /dev/shm\ttmpfs\tdefaults,rw,nosuid,nodev,noexec\t0   0:' /etc/fstab \
+    || echo 'tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0' | sudo tee -a /etc/fstab
 # Re mount for it to reflect
 sudo mount -o remount,nodev /dev/shm
 
@@ -215,10 +216,10 @@ echo "ALL: ALL" | sudo tee -a /etc/hosts.allow
 # ip6tables -A INPUT -s ::1 -j DROP
 
 
-## 3.5.1.2 Ensure IPv4 loopback traffic is configured
-sudo iptables -A INPUT -i lo -j ACCEPT
-sudo iptables -A OUTPUT -o lo -j ACCEPT
-sudo iptables -A INPUT -s 127.0.0.0/8 -j DROP
+# ## 3.5.1.2 Ensure IPv4 loopback traffic is configured
+# sudo iptables -A INPUT -i lo -j ACCEPT
+# sudo iptables -A OUTPUT -o lo -j ACCEPT
+# sudo iptables -A INPUT -s 127.0.0.0/8 -j DROP
 
 # ## 3.5.2.2 Ensure IPv6 loopback traffic is configured
 sudo ip6tables -A INPUT -i lo -j ACCEPT
