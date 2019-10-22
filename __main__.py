@@ -602,17 +602,17 @@ def main():
     configure_umask()
     configure_su()
 
-    # Call bash script to fix missing rules
-    file_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "missing_rules.sh"
-    )
-    if args.skip:
-        cmd = [file_path, "skip"]
-    else:
-        cmd = [file_path]
-
-    subprocess.call(cmd)
+    # # Call bash script to fix missing rules
+    # file_path = os.path.join(
+    #     os.path.dirname(os.path.realpath(__file__)),
+    #     "missing_rules.sh"
+    # )
+    # if args.skip:
+    #     cmd = [file_path, "skip"]
+    # else:
+    #     cmd = [file_path]
+    #
+    # subprocess.call(cmd)
 
 
 if __name__ == '__main__':
