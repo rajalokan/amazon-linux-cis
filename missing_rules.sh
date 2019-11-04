@@ -26,7 +26,7 @@ sudo rmmod hfsplus
 sudo rmmod squashfs
 sudo rmmod udf
 
-# # 1.1.2 Ensure /tmp is configured
+# 1.1.2 Ensure /tmp is configured
 if [[ -z $1 ]]; then
     echo "Configuring /tmp"
     sudo systemctl unmask tmp.mount
@@ -37,14 +37,24 @@ if [[ -z $1 ]]; then
     #
     # Re mount for it to reflect
     sudo mount -o remount,nodev /tmp
+    sudo mount -o remount,nosuid /tmp
+    sudo mount -o remount,noexec /tmp
 fi
 
 ## 1.1.17 Ensure noexec option set on /dev/shm partition
-grep -Pq '/dev/shm' /etc/fstab \
-    && sudo sed -i 's:^tmpfs.*/dev/shm.*:tmpfs\t    /dev/shm\ttmpfs\tdefaults,rw,nosuid,nodev,noexec\t0   0:' /etc/fstab \
-    || echo 'tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime 0 0' | sudo tee -a /etc/fstab
+if [[ $(grep -Pq '/dev/shm' /etc/fstab) ]]; then
+    echo "true"
+    sudo sed -i 's:^tmpfs.*/dev/shm.*:tmpfs\t    /dev shm\ttmpfs\tdefaults,rw,nosuid,nodev,noexec\t0   0:' /etc/fstab
+else
+    echo 'tmpfs /dev/shm tmpfs defaults,nodev,nosuid,noexec 0 0' | sudo tee -a /etc/fstab
+fi
 # Re mount for it to reflect
 sudo mount -o remount,nodev /dev/shm
+sudo mount -o remount,noexec /dev/shm
+
+# 1.2.3
+# TODO: Verify this
+sudo sed -i 's/^gpgcheck=0$/gpgcheck=1/' /etc/yum.repos.d/*.repo
 
 # 1.3.1
 sudo yum -y install aide
@@ -206,7 +216,7 @@ echo "ALL: ALL" | sudo tee -a /etc/hosts.allow
 # iptables -P INPUT DROP
 # iptables -P OUTPUT DROP
 # iptables -P FORWARD DROP
-#
+
 # # 3.5.1.2
 # iptables -A INPUT -i lo -j ACCEPT
 # iptables -A OUTPUT -o lo -j ACCEPT
@@ -336,8 +346,11 @@ sudo sed -i 's/admin_space_left_action =.*/admin_space_left_action = halt/g' /et
 # 4.1.1.3
 sudo sed -i 's/max_log_file_action =.*/max_log_file_action = keep_logs/g' /etc/audit/auditd.conf
 
-# 4.2.4
-sudo find /var/log -type f -exec chmod g-wx,o-rwx {} +
+# # 4.2.4
+# sudo find /var/log -type f -exec chmod g-wx,o-rwx {} +
+# sudo find /var/log -type d -exec chmod g-wx,o-rwx {} +
+# sudo chmod 755 /var/log
+
 
 # 5.2.4
 echo "Protocol 2" | sudo tee -a /etc/ssh/sshd_config
@@ -397,16 +410,17 @@ sudo sed -i 's/#.*LoginGraceTime.*/LoginGraceTime 60/g' /etc/ssh/sshd_config
 # 5.2.19
 sudo sed -i 's/#.*Banner.*/Banner \/etc\/issue.net/g' /etc/ssh/sshd_config
 
-# 5.4.2 Ensure system accounts are non-login
-for user in `awk -F: '($3 < 1000) {print $1 }' /etc/passwd`; do
-    if [[ $user != "root" ]]; then
-        usermod -L $user
-        if [ $user != "sync" ] && [ $user != "shutdown" ] && [ $user != "halt" ]; then
-            usermod -s /usr/sbin/nologin $user
-        fi
-    fi
-done
-
+# # 5.4.2 Ensure system accounts are non-login
+# for user in `awk -F: '($3 < 1000) {print $1 }' /etc/passwd`; do
+#     if [[ $user != "root" ]]; then
+#         usermod -L $user
+#         if [ $user != "sync" ] && [ $user != "shutdown" ] && [ $user != "halt" ]; then
+#             usermod -s /usr/sbin/nologin $user
+#         fi
+#     fi
+# done
+# # TODO: Need to ensure this runs for mongod user
+# sudo usermod -s /usr/sbin/nologin mongod
 
 # 5.4.4
 # 5.4.5
@@ -437,32 +451,41 @@ EOF
 
 # # 6.2.8
 # for dir in `cat /etc/passwd | egrep -v '(root|halt|sync|shutdown)' | awk -F: '($7 != "/usr/sbin/nologin") { print $6 }'`; do
-#   dirperm=`ls -ld $dir | cut -f1 -d" "`
-#   if [ `echo $dirperm | cut -c6 ` != "-" ]; then
-#     echo "Group Write permission set on directory $dir"
-#   fi
-#   if [ `echo $dirperm | cut -c8 ` != "-" ]; then
-#     echo "Other Read permission set on directory $dir"
-#   fi
-#   if [ `echo $dirperm | cut -c9 ` != "-" ]; then
-#     echo "Other Write permission set on directory $dir"
-#   fi
-#   if [ `echo $dirperm | cut -c10 ` != "-" ]; then
-#     echo "Other Execute permission set on directory $dir"
-#   fi
+#     dirperm=`ls -ld $dir | cut -f1 -d" "`
+#     if [ `echo $dirperm | cut -c6 ` != "-" ]; then
+#         echo "Group Write permission set on directory $dir. Revoking it"
+#         sudo chmod g-w $dir
+#     fi
+#     if [ `echo $dirperm | cut -c8 ` != "-" ]; then
+#         echo "Other Read permission set on directory $dir. Revoking it"
+#         sudo chmod o-r $dir
+#     fi
+#     if [ `echo $dirperm | cut -c9 ` != "-" ]; then
+#         echo "Other Write permission set on directory $dir. Revoking it"
+#         sudo chmod o-w $dir
+#     fi
+#     if [ `echo $dirperm | cut -c10 ` != "-" ]; then
+#         echo "Other Execute permission set on directory $dir. Revoking it"
+#         sudo chmod o-x $dir
+#     fi
 # done
 
 # # 6.2.9
-cat /etc/passwd | awk -F: '{ print $1 " " $3 " " $6 }' | while read user uid dir; do
-  # if [ $uid -ge 1000 -a -d "$dir" -a $user != "nfsnobody" ]; then
-  if [ $uid -ge 1000 ]; then
-      owner=$(stat -L -c "%U" "$dir")
-      if [ "$owner" != "$user" ]; then
-        echo "The home directory ($dir) of user $user is owned by $owner."
-        sudo chown ${user}:${user} ${dir}
-      fi
-  fi
-done
-# sudo chown nfsnobody:nfsnobody /var/lib/nfs
+# cat /etc/passwd | awk -F: '{ print $1 " " $3 " " $6 }' | while read user uid dir; do
+#   if [ $uid -ge 1000 -a -d "$dir" -a $user != "nfsnobody" ]; then
+#   # if [ $uid -ge 1000 ]; then
+#     owner=$(stat -L -c "%U" "$dir" 2>&1)
+#     if [[ $? -ne 0 && $owner == "stat: cannot stat '$dir': No such file or directory" ]]; then
+#         echo "Creating dir $dir and allowing permission for user: ${user}"
+#         # sudo mkdir -p ${dir}
+#         # sudo chown ${user}:${user} ${dir}
+#     fi
+#     if [ "$owner" != "$user" ]; then
+#         echo "The home directory ($dir) of user $user is owned by $owner."
+#         # sudo chown ${user}:${user} ${dir}
+#     fi
+#   fi
+# done
+# # sudo chown nfsnobody:nfsnobody /var/lib/nfs
 
 echo "CIS hardening successful"
