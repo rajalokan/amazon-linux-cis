@@ -612,7 +612,7 @@ def main():
     else:
         cmd = [file_path]
 
-    subprocess.call(cmd)
+    # subprocess.call(cmd)
 
 
 if __name__ == '__main__':

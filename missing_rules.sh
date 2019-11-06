@@ -379,23 +379,23 @@ sudo sed -i 's/#.*PermitEmptyPasswords.*/PermitEmptyPasswords no/g' /etc/ssh/ssh
 # 5.2.12
 sudo sed -i 's/#.*PermitUserEnvironment.*/PermitUserEnvironment no/g' /etc/ssh/sshd_config
 
-# 5.2.13
-sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
+# # 5.2.13
+# sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
+# #
+# Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+# EOF
 #
-Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-EOF
-
-# 5.2.14
-sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
+# # 5.2.14
+# sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
+# #
+# MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
+# EOF
 #
-MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
-EOF
-
-# 5.2.15
-sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
-#
-KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256
-EOF
+# # 5.2.15
+# sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
+# #
+# KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256
+# EOF
 
 # 5.2.16
 sudo sed -i 's/#.*ClientAliveInterval*.*/ClientAliveInterval 300/g' /etc/ssh/sshd_config
