@@ -347,9 +347,9 @@ sudo sed -i 's/admin_space_left_action =.*/admin_space_left_action = halt/g' /et
 sudo sed -i 's/max_log_file_action =.*/max_log_file_action = keep_logs/g' /etc/audit/auditd.conf
 
 # # 4.2.4
-# sudo find /var/log -type f -exec chmod g-wx,o-rwx {} +
-# sudo find /var/log -type d -exec chmod g-wx,o-rwx {} +
-# sudo chmod 755 /var/log
+sudo find /var/log -type f -exec chmod g-wx,o-rwx {} +
+sudo find /var/log -type d -exec chmod g-wx,o-rwx {} +
+sudo chmod 755 /var/log
 
 
 # 5.2.4
@@ -487,5 +487,11 @@ EOF
 #   fi
 # done
 # # sudo chown nfsnobody:nfsnobody /var/lib/nfs
+
+# Custom fixes
+sudo mount -o remount,nodev /var/tmp
+mongo_repo_path="/etc/yum.repos.d/mongodb-org-4.0.repo"
+[[ -f $mongo_repo_path ]] && sudo sed -i 's/^gpgcheck=0$/gpgcheck=1/' $mongo_repo_path
+
 
 echo "CIS hardening successful"
