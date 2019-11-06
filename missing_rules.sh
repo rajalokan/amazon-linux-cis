@@ -53,7 +53,6 @@ sudo mount -o remount,nodev /dev/shm
 sudo mount -o remount,noexec /dev/shm
 
 # 1.2.3
-# TODO: Verify this
 sudo sed -i 's/^gpgcheck=0$/gpgcheck=1/' /etc/yum.repos.d/*.repo
 
 # 1.3.1
@@ -103,6 +102,7 @@ fs.suid_dumpable = 0
 kernel.randomize_va_space = 2
 
 # 3.1.1 Ensure IP forwarding is disabled
+net.ipv4.ip_forward = 0
 net.ipv6.conf.all.forwarding = 0
 
 # 3.1.2 Ensure packet redirect sending is disabled
@@ -150,8 +150,9 @@ EOF
 # 1.5.2
 sudo sysctl -w kernel.randomize_va_space=2
 
+# 3.1.1
 # 3.1.2
-# sudo sysctl -w net.ipv4.ip_forward=0
+sudo sysctl -w net.ipv4.ip_forward=0
 sudo sysctl -w net.ipv6.conf.all.forwarding=0
 sudo sysctl -w net.ipv4.route.flush=1
 sudo sysctl -w net.ipv6.route.flush=1
@@ -264,6 +265,11 @@ sudo ip6tables -P FORWARD DROP
 # sudo iptables -A INPUT -p tcp --match multiport --dports 0:65535 -j ACCEPT
 # sudo iptables -A OUTPUT -p tcp --match multiport --dports 0:65535 -j ACCEPT
 
+# 3.6.2
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A OUTPUT -o lo -j ACCEPT
+sudo iptables -A INPUT -s 127.0.0.0/8 -j DROP
+
 # 3.6 Disable ipV6
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& ipv6.disable=1/' /etc/default/grub
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -346,7 +352,7 @@ sudo sed -i 's/admin_space_left_action =.*/admin_space_left_action = halt/g' /et
 # 4.1.1.3
 sudo sed -i 's/max_log_file_action =.*/max_log_file_action = keep_logs/g' /etc/audit/auditd.conf
 
-# # 4.2.4
+# 4.2.4
 sudo find /var/log -type f -exec chmod g-wx,o-rwx {} +
 sudo find /var/log -type d -exec chmod g-wx,o-rwx {} +
 sudo chmod 755 /var/log
@@ -390,12 +396,12 @@ sudo sed -i 's/#.*PermitUserEnvironment.*/PermitUserEnvironment no/g' /etc/ssh/s
 # #
 # MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
 # EOF
+
+# 5.2.15
+sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
 #
-# # 5.2.15
-# sudo tee -a /etc/ssh/sshd_config > /dev/null << EOF
-# #
-# KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256
-# EOF
+KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256
+EOF
 
 # 5.2.16
 sudo sed -i 's/#.*ClientAliveInterval*.*/ClientAliveInterval 300/g' /etc/ssh/sshd_config
@@ -490,8 +496,6 @@ EOF
 
 # Custom fixes
 sudo mount -o remount,nodev /var/tmp
-mongo_repo_path="/etc/yum.repos.d/mongodb-org-4.0.repo"
-[[ -f $mongo_repo_path ]] && sudo sed -i 's/^gpgcheck=0$/gpgcheck=1/' $mongo_repo_path
 
 
 echo "CIS hardening successful"
