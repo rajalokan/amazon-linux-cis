@@ -102,7 +102,6 @@ fs.suid_dumpable = 0
 kernel.randomize_va_space = 2
 
 # 3.1.1 Ensure IP forwarding is disabled
-net.ipv4.ip_forward = 0
 net.ipv6.conf.all.forwarding = 0
 
 # 3.1.2 Ensure packet redirect sending is disabled
@@ -152,7 +151,7 @@ sudo sysctl -w kernel.randomize_va_space=2
 
 # 3.1.1
 # 3.1.2
-sudo sysctl -w net.ipv4.ip_forward=0
+# sudo sysctl -w net.ipv4.ip_forward=0
 sudo sysctl -w net.ipv6.conf.all.forwarding=0
 sudo sysctl -w net.ipv4.route.flush=1
 sudo sysctl -w net.ipv6.route.flush=1
