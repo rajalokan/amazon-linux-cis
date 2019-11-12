@@ -413,7 +413,7 @@ sudo sed -i 's/#.*LoginGraceTime.*/LoginGraceTime 60/g' /etc/ssh/sshd_config
 # AllowUsers <userlist>AllowGroups <grouplist>DenyUsers <userlist>DenyGroups<grouplist>
 
 # 5.2.19
-sudo sed -i 's/#.*Banner.*/Banner \/etc\/issue.net/g' /etc/ssh/sshd_config
+sudo sed -i 's/#.*Banner.*/Banner \/etc\/issue.net\n/g' /etc/ssh/sshd_config
 
 # # 5.4.2 Ensure system accounts are non-login
 # for user in `awk -F: '($3 < 1000) {print $1 }' /etc/passwd`; do
@@ -492,9 +492,5 @@ EOF
 #   fi
 # done
 # # sudo chown nfsnobody:nfsnobody /var/lib/nfs
-
-# Custom fixes
-sudo mount -o remount,nodev /var/tmp
-
 
 echo "CIS hardening successful"

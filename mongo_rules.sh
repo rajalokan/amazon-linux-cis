@@ -130,3 +130,26 @@ sudo iptables -P OUTPUT DROP
 sudo iptables -P FORWARD DROP
 
 sudo iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+
+
+
+
+sudo cp /etc/default/grub /etc/default/grub.bak
+sudo sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT=\"console=tty0 console=ttyS0,115200n8 /GRUB_CMDLINE_LINUX_DEFAULT=\"console=ttyS0,115200n8 console=tty0 selinux=1 security=selinux enforcing=1 /g' /etc/default/grub
+
+
+# 1.6.1.2 Ensure the SELinux state is enforcing
+sudo yum -y update
+sudo yum -y install policycoreutils selinux-policy-targeted policycoreutils-python
+sudo rm -f /etc/sysconfig/selinux
+sudo ln -s /etc/selinux/config /etc/sysconfig/selinux
+sudo sed -i 's/SELINUX=.*/SELINUX=enforcing/g' /etc/selinux/config
+# 1.6.1.3 Ensure SELinux policy is configured
+sudo sed -i 's/SELINUXTYPE=.*/SELINUXTYPE=targeted/g' /etc/selinux/config
+sudo semanage fcontext -a -t shell_exec_t /bin/bash
+sudo restorecon -rFv /
+sudo touch /.autorelabel
+sudo systemctl enable rhel-autorelabel-mark.service
+sudo systemctl enable rhel-autorelabel.service
+#
+sudo reboot
