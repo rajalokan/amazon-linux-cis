@@ -493,4 +493,10 @@ EOF
 # done
 # # sudo chown nfsnobody:nfsnobody /var/lib/nfs
 
+sudo sed -i '/^Banner.*/d' /etc/ssh/sshd_config
+sudo bash -c 'cat << EOF >> /etc/ssh/sshd_config
+Banner /etc/issue.net
+Protocol 2
+EOF'
+
 echo "CIS hardening successful"

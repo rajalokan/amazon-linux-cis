@@ -3,8 +3,6 @@
 # 1.1.2 Ensure /tmp is configured
 # 1.1.4
 # 1.1.5
-sudo mount -o remount,nosuid /tmp
-sudo mount -o remount,noexec /tmp
 
 # 1.1.6, 7, 11, 12, 13
 
